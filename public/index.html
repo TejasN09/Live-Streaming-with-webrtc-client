@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebRTC Multiparty</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <style>
+        #meetingRoom div {
+            text-align: center;
+        }
+
+        .videoContainer {
+            float: left;
+        }
+
+        #meetingRoom:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+
+<h1>WebRTC Multiparty</h1>
+
+<div id="roomSelection" style="display: block;">
+    <label> Select User Type: </label>
+    <select id="userType">
+        <option value="host">Host</option>
+        <option value="member">Member</option>
+        <option value="viewer">Viewer</option>
+    </select>
+    <label> Type User Name: </label>
+      <input id="name" type="text" />
+    <button id="enterRoom">Enter</button>
+</div>
+<div id="meetingRoom" style="display: none"></div>
+
+<script>
+
+    let roomName;
+
+      function generateRoomId() {
+        var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        var roomId = '';
+        var charactersLength = characters.length;
+        for (var i = 0; i < 10; i++) {
+          roomId += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return roomId;
+      }
+
+      document.getElementById('enterRoom').addEventListener('click', function (event) {
+        event.preventDefault(); 
+    
+        var userType = document.getElementById('userType').value;
+    
+        if (window.location.href.includes('roomId')) {
+            var urlParts = window.location.href.split('=');
+            console.log(urlParts)
+            if (urlParts.length > 1) {
+                roomName = urlParts[urlParts.length - 1];
+            }
+            console.log(roomName)
+        }else if (userType !== 'viewer') {
+            roomName = generateRoomId(); 
+            var newUrl = window.location.href + 'roomId=' + roomName;
+            history.pushState({ path: newUrl }, '', newUrl);
+            console.log(roomName)
+        }
+    
+        if (userType === 'host') {
+            window.open('https://localhost:8443/role?userType=' + encodeURIComponent(userType) + '&roomId=' + encodeURIComponent(roomName));
+        } else if (userType === 'viewer') {
+            window.location.href = 'https://localhost:8443/role?userType=' + encodeURIComponent(userType) + '&roomId=' + encodeURIComponent(roomName);
+        } 
+        return false;
+    });
+    
+</script>
+<script src="./adapter-latest.js"></script>
+<script src="./kurento-utils.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="./client.js"></script>
+
+
+</body>
+</html>
